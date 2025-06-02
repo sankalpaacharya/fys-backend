@@ -2,6 +2,21 @@ from openai import AsyncOpenAI
 from groq import AsyncGroq
 from app.config.settings import settings
 from typing import AsyncGenerator
+from pydantic import BaseModel
+from typing import Optional
+from app.utils.prompt_utils import prompt_render
+from app.services.supabase_service import get_finance
+
+class ChatContext(BaseModel):
+    pass
+
+class ChatPrompt(BaseModel):
+    context: Optional[ChatContext] = None
+    query: str
+    character: str = "senku"
+    finance_data:str
+    filename: str = "chat_prompt.md"
+
 
 def get_llm_client_and_model(provider: str):
     if provider == "openai":
@@ -14,11 +29,13 @@ def get_llm_client_and_model(provider: str):
 
 async def chat_with_stream(provider: str, query: str) -> AsyncGenerator[str, None]:
     client, model = get_llm_client_and_model(provider)
-    chat_prompt = query  
+    finance_data  = await get_finance()
+    print(finance_data)
+    chat_prompt = prompt_render(prompt_obj=ChatPrompt(query=query,finance_data=str(finance_data["data"])))
     try:
         response = await client.chat.completions.create(
             model=model,
-            messages=[{"role": "user", "content": chat_prompt+"always answer in markdown format only, only reply user if query is related to health"}],
+            messages=[{"role": "user", "content": chat_prompt}],
             stream=True,
         )
         stream_response = ""
