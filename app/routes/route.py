@@ -12,6 +12,7 @@ async def chat_stream(body: ChatRequest):
     try:
         return StreamingResponse(
             chat_with_stream(provider="groq", query=body.query),
+            media_type="text/event-stream"
         )
     except Exception as e:
         return str(e)
