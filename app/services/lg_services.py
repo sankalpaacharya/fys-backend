@@ -37,7 +37,6 @@ class ChatMemoryService:
     
     async def _process_query_node(self, state: State) -> Dict[str, Any]:
         """Process the incoming query and prepare context"""
-        # Add the human message to conversation history
         human_message = HumanMessage(content=state["query"])
         return {
             "messages": [human_message],

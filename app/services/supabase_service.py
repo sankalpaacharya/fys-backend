@@ -1,7 +1,7 @@
 from app.config.settings import settings
 
-url: str = settings.NEXT_PUBLIC_SUPABASE_URL
-key: str = settings.NEXT_PUBLIC_SUPABASE_ANON_KEY
+url: str = settings.SUPABASE_URL
+key: str = settings.SUPABASE_KEY
 from supabase import AsyncClient,create_async_client
 
 async def create_supabase() -> AsyncClient:
