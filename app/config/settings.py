@@ -6,6 +6,8 @@ class Setting(BaseSettings):
     ENVIRONMENT : str = "development"
     SUPABASE_URL : str
     SUPABASE_KEY : str
+    MILVUS_URL : str
+    MILVUS_TOKEN :str
     
     class Config:
         env_file = ".env"
