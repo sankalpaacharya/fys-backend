@@ -4,6 +4,7 @@ class Setting(BaseSettings):
     GROQ_API_KEY : str
     OPENAI_API_KEY : str
     SUPABASE_URL : str
+
     SUPABASE_KEY : str
 
     
