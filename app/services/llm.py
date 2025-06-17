@@ -19,6 +19,10 @@ class ChatPrompt(BaseModel):
     character: str = "senku"
     finance_data:str
     filename: str = "chat_prompt.md"
+    
+class ImagePrompt(BaseModel):
+    finance : str
+    filename : str = "image_prompt.md"
 
 
 def get_llm_client_and_model(provider: str):
@@ -55,27 +59,18 @@ async def chat_with_stream(provider: str, query: str) -> AsyncGenerator[str, Non
 
 
 async def upload_snap_to_ai(image:UploadFile):
-    client, model  = get_llm_client_and_model("openai")
+    client, model  = get_llm_client_and_model("groq")
     image_bytes = await image.read()
     encoded_image = base64.b64encode(image_bytes).decode("utf-8")
     image_data_url = f"data:{image.content_type};base64,{encoded_image}"
-    prompt = (
-    "You are helping with a finance tracking app. "
-    "The user from India has uploaded an image of a product they bought. "
-    "Your task is to return a **pure JSON** object with the following keys:\n"
-    "- `title`: the product name (string)\n"
-    "- `amount`: estimated price in INR (float)\n"
-    "- `reason`: brief reason why you guessed that price (string)\n\n"
-    "Only return the JSON object — no markdown, no explanations, no commentary. "
-    "If the image is explicit, NSFW, or not a product, return this exact JSON:\n"
-    "{\"error\": \"Invalid or inappropriate image\"}"
-)
+    finance = str(await get_finance())
+    image_prompt = prompt_render(ImagePrompt(finance=finance))
     try:
         response =await client.chat.completions.create(model=model, messages=[
                 {
                     "role": "user",
                     "content": [
-                        {"type": "text", "text": prompt},
+                        {"type": "text", "text": image_prompt},
                         {"type": "image_url", "image_url": {"url": image_data_url}},
                     ],
                 }

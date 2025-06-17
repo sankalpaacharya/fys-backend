@@ -25,6 +25,7 @@ async def upload_image(user_id: str = Form(...), image: UploadFile = File(...)):
         raise HTTPException(status_code=400, detail="Invalid image format")
 
     result = await upload_snap_to_ai(image=image) 
-    result = json.loads(result)
+    print(result)
+    print(type(result))
     return JSONResponse(content=result)
     
