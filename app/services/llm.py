@@ -23,7 +23,7 @@ class ChatPrompt(BaseModel):
 
 def get_llm_client_and_model(provider: str):
     if provider == "openai":
-        return AsyncOpenAI(api_key=settings.OPENAI_API_KEY), "gpt-4o"
+        return AsyncOpenAI(api_key=settings.OPENAI_API_KEY), "gpt-4o-mini"
     elif provider == "groq":
         return AsyncGroq(api_key=settings.GROQ_API_KEY), "meta-llama/llama-4-scout-17b-16e-instruct"
     else:
@@ -55,7 +55,7 @@ async def chat_with_stream(provider: str, query: str) -> AsyncGenerator[str, Non
 
 
 async def upload_snap_to_ai(image:UploadFile):
-    client, model  = get_llm_client_and_model("groq")
+    client, model  = get_llm_client_and_model("openai")
     image_bytes = await image.read()
     encoded_image = base64.b64encode(image_bytes).decode("utf-8")
     image_data_url = f"data:{image.content_type};base64,{encoded_image}"

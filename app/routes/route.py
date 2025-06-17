@@ -23,6 +23,8 @@ async def chat_stream(body: ChatRequest):
 async def upload_image(user_id: str = Form(...), image: UploadFile = File(...)):
     if image.content_type not in ["image/png", "image/jpeg"]:
         raise HTTPException(status_code=400, detail="Invalid image format")
+
     result = await upload_snap_to_ai(image=image) 
+    result = json.loads(result)
     return JSONResponse(content=result)
     
