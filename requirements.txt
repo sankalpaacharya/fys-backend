@@ -3,3 +3,4 @@ langchain-groq
 pydantic
 fastapi
 python-dotenv
+langgraph

@@ -1,24 +1,11 @@
+from typing import Any,Dict
 from pydantic import BaseModel
-from typing import List, Dict, Optional
 
 class ChatRequest(BaseModel):
-    query: str
-    session_id: Optional[str] = None  # For memory persistence
+    user_id: str
+    query : str
     
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "query": "What's my current balance?",
-                "session_id": "user_123_session",
-            }
-        }
-    
-# Response models for the new endpoints
-class ConversationHistoryResponse(BaseModel):
-    session_id: str
-    messages: List[Dict[str, str]]
-
-class ClearHistoryResponse(BaseModel):
-    session_id: str
-    cleared: bool
-    message: str
+class ChatPrompt(BaseModel):
+    filename:str = "chat_prompt.md"
+    finance_data : Dict[str, Any]
+    query : str
