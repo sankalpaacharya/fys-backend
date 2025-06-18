@@ -30,11 +30,13 @@ Return ONLY a JSON object with these exact keys:
   "category": "Restaurants"
 }
 
-**CRITICAL FORMATTING RULES:**
+## CRITICAL FORMATTING RULES:
 - Return ONLY the raw JSON object - no markdown code blocks (```), no backticks, no "json" label
 - Start your response directly with { and end with }
 - Do NOT use ```json or ``` anywhere in your response
-- If the image is inappropriate, explicit, NSFW, or not a product, return: {"error": "Invalid or inappropriate image"}
-- Use the user's existing categories from {{finance}} - do not invent new ones
+- If the image is unclear, inappropriate, explicit, NSFW, or does not show a recognizable product, return: {"error": "Invalid or inappropriate image"}
+- If the image shows a person holding/using a product, focus on identifying the product itself
+- Use only the user's existing categories - do not invent new ones
+- Provide realistic price estimates based on current Indian market prices
 
 Your response must be valid JSON that can be parsed directly without any preprocessing.
