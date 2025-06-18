@@ -6,7 +6,7 @@ from typing import AsyncGenerator
 from pydantic import BaseModel
 from typing import Optional
 from app.utils.prompt_utils import prompt_render
-from app.services.supabase_service import get_finance
+from app.services.supabase_service import get_finance,get_categories
 from fastapi import UploadFile
 
 
@@ -63,7 +63,7 @@ async def upload_snap_to_ai(image:UploadFile):
     image_bytes = await image.read()
     encoded_image = base64.b64encode(image_bytes).decode("utf-8")
     image_data_url = f"data:{image.content_type};base64,{encoded_image}"
-    finance = str(await get_finance())
+    finance = str(await (get_categories()))
     image_prompt = prompt_render(ImagePrompt(finance=finance))
     try:
         response =await client.chat.completions.create(model=model, messages=[
