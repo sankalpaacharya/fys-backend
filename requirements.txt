@@ -3,3 +3,11 @@ langchain-groq
 pydantic
 fastapi
 python-dotenv
+pydantic-settings
+openai
+itsdangerous
+supabase
+jinja2
+httpx
+h2
+uvicorn
