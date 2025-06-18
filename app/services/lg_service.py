@@ -84,7 +84,7 @@ def prepare_messages(state: State):
 #                     model=model,
 #                     messages=messages_for_api,
 #                     temperature=0.7,
-#                     stream=True
+#                     # stream=True
 #                 )
 #                 ai_response = AIMessage(content=response.choices[0].message.content)
 #                 state['messages'].append(ai_response)
@@ -163,6 +163,54 @@ async def answer_query_streaming_collect(state: State):
         error_response = AIMessage(content=f"Error: {str(e)}")
         state['messages'].append(error_response)
         return state
+
+# async def answer_query_streaming_chunks(state: State):
+#     """
+#     Async generator that yields LLM response chunks as they arrive.
+#     """
+#     provider = state['provider']
+#     model = state['model']
+
+#     messages_for_api = []
+#     for msg in state['messages']:
+#         if isinstance(msg, SystemMessage):
+#             messages_for_api.append({"role": "system", "content": msg.content})
+#         elif isinstance(msg, HumanMessage):
+#             messages_for_api.append({"role": "user", "content": msg.content})
+#         elif isinstance(msg, AIMessage):
+#             messages_for_api.append({"role": "assistant", "content": msg.content})
+
+#     try:
+#         if provider == "openai":
+#             async with AsyncOpenAI(api_key=settings.OPENAI_API_KEY) as client:
+#                 response = await client.chat.completions.create(
+#                     model=model,
+#                     messages=messages_for_api,
+#                     temperature=0.7,
+#                     stream=True
+#                 )
+#                 async for chunk in response:
+#                     if hasattr(chunk.choices[0], "delta") and hasattr(chunk.choices[0].delta, "content"):
+#                         content = chunk.choices[0].delta.content
+#                         if content:
+#                             yield content
+#         elif provider == "groq":
+#             async with AsyncGroq(api_key=settings.GROQ_API_KEY) as client:
+#                 response = await client.chat.completions.create(
+#                     model=model,
+#                     messages=messages_for_api,
+#                     temperature=0.7,
+#                     stream=True
+#                 )
+#                 async for chunk in response:
+#                     if hasattr(chunk.choices[0], "delta") and hasattr(chunk.choices[0].delta, "content"):
+#                         content = chunk.choices[0].delta.content
+#                         if content:
+#                             yield content
+#         else:
+#             yield f"Unsupported LLM provider: {provider}"
+#     except Exception as e:
+#         yield f"Error generating response: {str(e)}"
 
 graph = StateGraph(State)
 graph.add_node("setup_provider", setup_provider)
