@@ -34,6 +34,7 @@ def get_llm_client_and_model(provider: str):
         error_msg = f"Unsupported LLM provider: {provider}"
         raise ValueError(error_msg)
 
+
 async def chat_with_stream(provider: str, query: str) -> AsyncGenerator[str, None]:
     client, model = get_llm_client_and_model(provider)
     finance_data  = await get_finance()
