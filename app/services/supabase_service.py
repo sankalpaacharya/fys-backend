@@ -14,6 +14,11 @@ async def get_finance():
     response = await supabase.table("finance").select("data").eq("user_id","9468f9b3-5d78-44b4-b714-e1aaff0195ef").execute()
     return response.data[0]["data"]
 
+async def get_categories():
+    supabase = await create_supabase() 
+    response = await supabase.table("category_groups").select("name, categories(name)").eq("user_id", "9468f9b3-5d78-44b4-b714-e1aaff0195ef").execute()
+    return response.data
+
 async def store_finance(data:str):
     """store data from llm to supabase
     """

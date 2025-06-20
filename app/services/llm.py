@@ -5,8 +5,10 @@ from typing import AsyncGenerator
 from pydantic import BaseModel
 from typing import Optional
 from app.utils.prompt_utils import prompt_render
-from app.services.supabase_service import get_finance,store_finance
+from app.services.supabase_service import get_finance,store_finance,get_categories
 import json
+import base64
+from fastapi import UploadFile
 
 class ChatContext(BaseModel):
     pass
@@ -17,6 +19,10 @@ class ChatPrompt(BaseModel):
     character: str = "senku"
     finance_data:str
     filename: str = "chat_prompt.md"
+    
+class ImagePrompt(BaseModel):
+    finance : str
+    filename : str = "image_prompt.md"
     
 FINANCE_TOOLS = [
     {
@@ -108,3 +114,25 @@ async def chat_with_stream(provider: str, query: str) -> AsyncGenerator[str, Non
         print("Final response:", response_message.content)
     except Exception as e:
         raise
+
+async def upload_snap_to_ai(image:UploadFile):
+    client, model  = get_llm_client_and_model("groq")
+    image_bytes = await image.read()
+    encoded_image = base64.b64encode(image_bytes).decode("utf-8")
+    image_data_url = f"data:{image.content_type};base64,{encoded_image}"
+    finance = str(await (get_categories()))
+    image_prompt = prompt_render(ImagePrompt(finance=finance))
+    try:
+        response =await client.chat.completions.create(model=model, messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": image_prompt},
+                        {"type": "image_url", "image_url": {"url": image_data_url}},
+                    ],
+                }
+            ],
+            max_tokens=1000,)
+        return response.choices[0].message.content
+    except Exception as e:
+        print(e)
