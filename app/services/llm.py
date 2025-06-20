@@ -44,10 +44,10 @@ FINANCE_TOOLS = [
     }
 ]
 
-def get_llm_client_and_model(provider: str,type: str="text"):
+def get_llm_client_and_model(provider: str, type: str):
     if provider == "openai":
         return AsyncOpenAI(api_key=settings.OPENAI_API_KEY), "gpt-4o"
-    elif provider == "groq":
+    elif provider == "groq" and type == "chat":
         return AsyncGroq(api_key=settings.GROQ_API_KEY), "llama-3.3-70b-versatile"
     elif provider == "groq" and type == "snap":
         return AsyncGroq(api_key=settings.GROQ_API_KEY), "meta-llama/llama-4-scout-17b-16e-instruct"
@@ -56,7 +56,7 @@ def get_llm_client_and_model(provider: str,type: str="text"):
         raise ValueError(error_msg)
 
 async def chat_with_stream(provider: str, query: str) -> AsyncGenerator[str, None]:
-    client, model = get_llm_client_and_model(provider)
+    client, model = get_llm_client_and_model(provider,type="chat")
     finance_data  = await get_finance()
     chat_prompt = prompt_render(prompt_obj=ChatPrompt(query=query,finance_data=str(finance_data)))
     messages = [{"role":"system","content":chat_prompt},{"role": "user", "content": query}]
@@ -103,9 +103,7 @@ async def chat_with_stream(provider: str, query: str) -> AsyncGenerator[str, Non
                         yield f"data: {content}\n\n"
             print(streamed_response)
         else:
-            # No tool calls, stream the regular response
             if response_message.content:
-                # Split the content into chunks for streaming effect
                 content = response_message.content
                 words = content.split()
                 for i, word in enumerate(words):
@@ -119,6 +117,7 @@ async def chat_with_stream(provider: str, query: str) -> AsyncGenerator[str, Non
 
 async def upload_snap_to_ai(image:UploadFile):
     client, model  = get_llm_client_and_model("groq",type="snap")
+    print(model)
     image_bytes = await image.read()
     encoded_image = base64.b64encode(image_bytes).decode("utf-8")
     image_data_url = f"data:{image.content_type};base64,{encoded_image}"
