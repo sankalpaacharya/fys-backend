@@ -16,6 +16,6 @@ async def get_finance():
 
 async def get_categories():
     supabase = await create_supabase() 
-    response = await supabase.table("category_groups").select("name, categories(name)").eq("user_id", "9468f9b3-5d78-44b4-b714-e1aaff0195ef").execute()
+    response = await supabase.table("category_groups").select("name, categories(id,name)").eq("user_id", "9468f9b3-5d78-44b4-b714-e1aaff0195ef").execute()
     return response.data
 

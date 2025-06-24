@@ -14,6 +14,7 @@ Return ONLY a JSON object with these exact keys:
 - `amount`: Estimated price in INR (number), don't put fake amount provide as accurate you can
 - `categoryGroup`: Category group from user's existing groups (string)  
 - `category`: Specific category from user's existing categories (string)
+- `categoryID`: Specific category from user's existing categories (uuid)
 
 **Examples:**
 {
@@ -21,6 +22,7 @@ Return ONLY a JSON object with these exact keys:
   "amount": 8999.00,
   "categoryGroup": "Electronics",
   "category": "Mobile Accessories"
+  "categoryID":uuid
 }
 
 {
@@ -28,6 +30,7 @@ Return ONLY a JSON object with these exact keys:
   "amount": 450.00,
   "categoryGroup": "Food & Dining",
   "category": "Restaurants"
+  "categoryID":uuid
 }
 
 ## CRITICAL FORMATTING RULES:
