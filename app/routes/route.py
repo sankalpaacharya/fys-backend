@@ -5,7 +5,8 @@ from fastapi.responses import StreamingResponse,JSONResponse
 from uuid import UUID
 from app.core.models import ChatRequest
 import json
-from app.services.llm import upload_snap_to_ai
+from app.services.llm import upload_snap_to_ai,notification
+from app.services.supabase_service import get_full_user_info
 
 router = APIRouter(tags=["Chat"])
 
@@ -28,3 +29,15 @@ async def upload_image(user_id: str = Form(...), image: UploadFile = File(...)):
     print(type(result))
     result = json.loads(result)
     return JSONResponse(content=result)
+
+@router.post("/notification")
+async def send_notification():
+    try:
+        response = await notification(provider="groq")
+        return response
+    except Exception as e:
+        return str(e)
+    
+@router.post("/test")
+async def get_full_info():
+    return await get_full_user_info()

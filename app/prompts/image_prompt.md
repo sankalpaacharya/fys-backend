@@ -4,7 +4,7 @@ The user has uploaded an image of a product they bought. Analyze the image and e
 
 **Requirements:**
 - Extract the product name and estimate its price in Indian Rupees (INR)
-- Categorize the expense using ONLY the categories provided in {{finance}}
+- Categorize the expense using ONLY the categories provided in `{{finance}}`
 - If no appropriate category exists in the user's data, select the closest matching one
 - Never create new categories - only use existing ones from the user's data
 

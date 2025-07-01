@@ -5,7 +5,7 @@ from typing import AsyncGenerator
 from pydantic import BaseModel
 from typing import Optional
 from app.utils.prompt_utils import prompt_render
-from app.services.supabase_service import get_finance,store_finance,get_categories
+from app.services.supabase_service import get_full_user_info,store_finance,get_categories
 import json
 import base64
 from fastapi import UploadFile
@@ -23,6 +23,10 @@ class ChatPrompt(BaseModel):
 class ImagePrompt(BaseModel):
     finance : str
     filename : str = "image_prompt.md"
+    
+class NotificationPrompt(BaseModel):
+    finance : str
+    filename : str = "notification_prompt.md"
     
 FINANCE_TOOLS = [
     {
@@ -57,7 +61,7 @@ def get_llm_client_and_model(provider: str, type: str):
 
 async def chat_with_stream(provider: str, query: str) -> AsyncGenerator[str, None]:
     client, model = get_llm_client_and_model(provider,type="chat")
-    finance_data  = await get_finance()
+    finance_data  = await get_full_user_info()
     chat_prompt = prompt_render(prompt_obj=ChatPrompt(query=query,finance_data=str(finance_data)))
     messages = [{"role":"system","content":chat_prompt},{"role": "user", "content": query}]
     try:
@@ -101,7 +105,6 @@ async def chat_with_stream(provider: str, query: str) -> AsyncGenerator[str, Non
                     if content:
                         streamed_response += content
                         yield f"data: {content}\n\n"
-            print(streamed_response)
         else:
             if response_message.content:
                 content = response_message.content
@@ -117,7 +120,6 @@ async def chat_with_stream(provider: str, query: str) -> AsyncGenerator[str, Non
 
 async def upload_snap_to_ai(image:UploadFile):
     client, model  = get_llm_client_and_model("groq",type="snap")
-    print(model)
     image_bytes = await image.read()
     encoded_image = base64.b64encode(image_bytes).decode("utf-8")
     image_data_url = f"data:{image.content_type};base64,{encoded_image}"
@@ -134,6 +136,22 @@ async def upload_snap_to_ai(image:UploadFile):
                 }
             ],
             max_tokens=1000,)
+        return response.choices[0].message.content
+    except Exception as e:
+        print(e)
+        
+async def notification(provider:str):
+    client, model = get_llm_client_and_model(provider,type="chat")
+    finance = await get_full_user_info()
+    notification_prompt = prompt_render(NotificationPrompt(finance=str(finance)))
+    message =  [
+        {"role":"user","content":notification_prompt}
+    ]
+    try:
+        response = await client.chat.completions.create(
+            model=model,
+            messages=message,
+        )
         return response.choices[0].message.content
     except Exception as e:
         print(e)
