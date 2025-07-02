@@ -17,7 +17,7 @@ class ChatPrompt(BaseModel):
     context: Optional[ChatContext] = None
     query: str
     character: str = "senku"
-    finance_data:str
+    categories:str
     filename: str = "chat_prompt.md"
     
 class ImagePrompt(BaseModel):
@@ -37,9 +37,8 @@ def get_llm_client_and_model(provider: str):
 
 async def chat_with_stream(provider: str, query: str) -> AsyncGenerator[str, None]:
     client, model = get_llm_client_and_model(provider)
-    finance_data  = await get_finance()
-    print(finance_data)
-    chat_prompt = prompt_render(prompt_obj=ChatPrompt(query=query,finance_data=str(finance_data["data"])))
+    category_list  = str(await get_categories())
+    chat_prompt = prompt_render(prompt_obj=ChatPrompt(query=query,categories=str(category_list)))
     try:
         response = await client.chat.completions.create(
             model=model,

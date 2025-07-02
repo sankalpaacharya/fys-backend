@@ -15,6 +15,7 @@ Return ONLY a JSON object with these exact keys:
 - `categoryGroup`: Category group from user's existing groups (string)  
 - `category`: Specific category from user's existing categories (string)
 - `categoryID`: Specific category from user's existing categories (uuid)
+- `type`: income/expense
 
 **Examples:**
 {
@@ -22,7 +23,9 @@ Return ONLY a JSON object with these exact keys:
   "amount": 8999.00,
   "categoryGroup": "Electronics",
   "category": "Mobile Accessories"
-  "categoryID":uuid
+  "categoryID":uuid,
+  "type":"expense"
+  
 }
 
 {
@@ -31,6 +34,7 @@ Return ONLY a JSON object with these exact keys:
   "categoryGroup": "Food & Dining",
   "category": "Restaurants"
   "categoryID":uuid
+  "type": "expense"
 }
 
 ## CRITICAL FORMATTING RULES:
