@@ -28,7 +28,8 @@ async def store_finance(data:str):
                       "amount":data["amount"],
                       "category":data["category"],
                       "category_group":data["category_group"],
-                      "description":data["description"]
+                      "description":data["description"],
+                      "type":data["type"]
                   }) \
                       .execute()
     return {"response":data["response"]}

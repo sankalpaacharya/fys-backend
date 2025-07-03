@@ -17,11 +17,12 @@ class ChatPrompt(BaseModel):
     context: Optional[ChatContext] = None
     query: str
     character: str = "senku"
-    finance_data:str
+    finance_data: str
     filename: str = "chat_prompt.md"
     
 class ImagePrompt(BaseModel):
-    finance : str
+    categories : str
+    user_data : str
     filename : str = "image_prompt.md"
     
 class NotificationPrompt(BaseModel):
@@ -124,7 +125,8 @@ async def upload_snap_to_ai(image:UploadFile):
     encoded_image = base64.b64encode(image_bytes).decode("utf-8")
     image_data_url = f"data:{image.content_type};base64,{encoded_image}"
     finance = str(await (get_categories()))
-    image_prompt = prompt_render(ImagePrompt(finance=finance))
+    user_data = str(await get_full_user_info())
+    image_prompt = prompt_render(ImagePrompt(categories=finance,user_data=user_data))
     try:
         response =await client.chat.completions.create(model=model, messages=[
                 {

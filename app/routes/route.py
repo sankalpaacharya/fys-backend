@@ -28,6 +28,7 @@ async def upload_image(user_id: str = Form(...), image: UploadFile = File(...)):
     print(result)
     print(type(result))
     result = json.loads(result)
+    print(result)
     return JSONResponse(content=result)
 
 @router.post("/notification")
