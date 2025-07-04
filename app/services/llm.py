@@ -104,7 +104,7 @@ async def upload_snap_to_ai(image:UploadFile):
     image_bytes = await image.read()
     encoded_image = base64.b64encode(image_bytes).decode("utf-8")
     image_data_url = f"data:{image.content_type};base64,{encoded_image}"
-    _, finance = await get_categories()
+    finance,_ = await get_categories()
     user_data = str(await get_full_user_info())
     image_prompt = prompt_render(ImagePrompt(categories=str(finance),user_data=user_data))
     try:

@@ -5,7 +5,7 @@ The user has uploaded an image of a product they bought. Analyze the image and e
 **Requirements:**
 - Extract the product name and estimate its price in Indian Rupees (INR)
 - Categorize the expense using ONLY the categories provided in `{{categories}}`
-- Structure of the `{{categories}}` is {Category Group Name : List of categories that falls under the category group}
+- Structure of the `{{categories}}` is {Category Group Name : List of categories and their ids that falls under the category group}
 - You have to assign category group and category provided in `{{categories}}` only.
 - If the category you assigned is not in `{{categories}}` then return empty string.  
 - Never create new categories - only use existing ones from the user's data
@@ -19,6 +19,8 @@ Return ONLY a JSON object with these exact keys:
 - `amount`: Estimated price in INR (number), don't put fake amount provide as accurate you can
 - `categoryGroup`: Category group from user's existing groups (string)  
 - `category`: Specific category from user's existing categories (string)
+- `categoryID` : Specific category id from user's existing categories (uuid)
+- `type` : income/expense
 - `response` : Your response to the product. 
 
 **Examples:**
@@ -27,6 +29,8 @@ Return ONLY a JSON object with these exact keys:
   "amount": 8999.00,
   "categoryGroup": "Electronics",
   "category": "Mobile Accessories",
+  "categoryID": uuid,
+  type : "expense",
   "response" : "“you have assigned 5000 for gym and already spent 3000, you are overspending”"
 }
 

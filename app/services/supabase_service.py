@@ -14,12 +14,12 @@ async def create_supabase() -> AsyncClient:
 
 async def get_categories():
     supabase = await create_supabase() 
-    response = await supabase.table("category_groups").select("name, categories(name), id").eq("user_id", USER_ID).execute()
+    response = await supabase.table("category_groups").select("name, categories(id,name), id").eq("user_id", USER_ID).execute()
     result = defaultdict(list) 
     for item in response.data:
         group_name = item["name"]
         for category in item["categories"]:
-            result[group_name].append(category["name"])
+            result[group_name].append((category["name"],category["id"]))
     final_categories = {k:v for k,v in result.items()}
     return final_categories, response.data
 
@@ -36,7 +36,9 @@ async def store_finance(data:str):
                       "category":data["category"],
                       "category_group":data["category_group"],
                       "description":data["description"],
-                      "type":data["type"]
+                      "type":data["type"],
+                      "category_id": data["category_id"],
+                      "account_id":data["account_id"]
                   }) \
                       .execute()
     return {"response":data["response"]}
@@ -44,7 +46,7 @@ async def store_finance(data:str):
 async def get_full_user_info():
     supabase = await create_supabase()
     accounts = await supabase.table("accounts") \
-        .select("name,amount,type")\
+        .select("id,name,amount,type")\
             .eq("user_id",USER_ID) \
                 .execute()
     transactions = await supabase.table("transactions") \
@@ -52,19 +54,24 @@ async def get_full_user_info():
             .eq("user_id",USER_ID) \
                 .execute()
     _, categories = await get_categories()
+    categories_without_id = []
     cat_grps_ids_ls = []
     for cat_grp in categories:
         cat_grps_ids_ls.append(cat_grp["id"])
+        categories_without_id.append({
+            "Category group": cat_grp["name"],
+            "Categories" : cat_grp["categories"]
+        })
     target_ls = []
     for id in cat_grps_ids_ls:
         targets = await supabase.table("categories") \
-            .select("name,category_months(activity,assign,available,month),category_targets(type,amount,yearly,monthly,weekly)")\
+            .select("id,name,category_months(activity,assign,available,month),category_targets(type,amount,yearly,monthly,weekly)")\
                 .eq("category_group_id",id) \
                     .execute()   
         target_ls.extend(targets.data)
     return {
         "accounts": accounts.data,
         "transactions": transactions.data,
-        "categories": categories,
+        "categories": categories_without_id,
         "targets": target_ls
     }
