@@ -5,9 +5,13 @@ The user has uploaded an image of a product they bought. Analyze the image and e
 **Requirements:**
 - Extract the product name and estimate its price in Indian Rupees (INR)
 - Categorize the expense using ONLY the categories provided in `{{categories}}`
-- If no appropriate category exists in the user's data, select the closest matching one
+- Structure of the `{{categories}}` is {Category Group Name : List of categories that falls under the category group}
+- You have to assign category group and category provided in `{{categories}}` only.
+- If the category you assigned is not in `{{categories}}` then return empty string.  
 - Never create new categories - only use existing ones from the user's data
 - Using `{{user_data}}`, you have to rate the product based on its price and compare it to other expenses and give your response.
+- You have to thoroughly analyze the `{{user_data}}` and based on that rate the product. you have to take into account everything about the user like its `category group` , `category` , `expenses` and how much user has assigned.  
+- Be more `creative` while giving rating. It should not be same as given in example. 
 
 **Response Format:**
 Return ONLY a JSON object with these exact keys:
@@ -23,7 +27,7 @@ Return ONLY a JSON object with these exact keys:
   "amount": 8999.00,
   "categoryGroup": "Electronics",
   "category": "Mobile Accessories",
-  "response" : "Was it necessary to buy it when you are already out of budget."
+  "response" : "“you have assigned 5000 for gym and already spent 3000, you are overspending”"
 }
 
 {

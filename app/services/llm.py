@@ -2,33 +2,13 @@ from openai import AsyncOpenAI
 from groq import AsyncGroq
 from app.config.settings import settings
 from typing import AsyncGenerator
-from pydantic import BaseModel
-from typing import Optional
+from app.core.models import ChatPrompt, ImagePrompt, NotificationPrompt
 from app.utils.prompt_utils import prompt_render
 from app.services.supabase_service import get_full_user_info,store_finance,get_categories
 import json
 import base64
 from fastapi import UploadFile
 
-class ChatContext(BaseModel):
-    pass
-
-class ChatPrompt(BaseModel):
-    context: Optional[ChatContext] = None
-    query: str
-    character: str = "senku"
-    finance_data: str
-    filename: str = "chat_prompt.md"
-    
-class ImagePrompt(BaseModel):
-    categories : str
-    user_data : str
-    filename : str = "image_prompt.md"
-    
-class NotificationPrompt(BaseModel):
-    finance : str
-    filename : str = "notification_prompt.md"
-    
 FINANCE_TOOLS = [
     {
     "type":"function",
@@ -124,9 +104,9 @@ async def upload_snap_to_ai(image:UploadFile):
     image_bytes = await image.read()
     encoded_image = base64.b64encode(image_bytes).decode("utf-8")
     image_data_url = f"data:{image.content_type};base64,{encoded_image}"
-    finance = str(await (get_categories()))
+    _, finance = await get_categories()
     user_data = str(await get_full_user_info())
-    image_prompt = prompt_render(ImagePrompt(categories=finance,user_data=user_data))
+    image_prompt = prompt_render(ImagePrompt(categories=str(finance),user_data=user_data))
     try:
         response =await client.chat.completions.create(model=model, messages=[
                 {

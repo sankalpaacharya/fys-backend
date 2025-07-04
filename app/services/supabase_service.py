@@ -1,10 +1,11 @@
+from collections import defaultdict
 import datetime
 from app.config.settings import settings
 import json
+from supabase import AsyncClient,create_async_client
 
 url: str = settings.SUPABASE_URL
 key: str = settings.SUPABASE_KEY
-from supabase import AsyncClient,create_async_client
 
 USER_ID = "3606243d-0256-4f84-ba2c-72496badf883"
 
@@ -14,7 +15,13 @@ async def create_supabase() -> AsyncClient:
 async def get_categories():
     supabase = await create_supabase() 
     response = await supabase.table("category_groups").select("name, categories(name), id").eq("user_id", USER_ID).execute()
-    return response.data
+    result = defaultdict(list) 
+    for item in response.data:
+        group_name = item["name"]
+        for category in item["categories"]:
+            result[group_name].append(category["name"])
+    final_categories = {k:v for k,v in result.items()}
+    return final_categories, response.data
 
 async def store_finance(data:str):
     """store data from llm to supabase
@@ -40,20 +47,14 @@ async def get_full_user_info():
         .select("name,amount,type")\
             .eq("user_id",USER_ID) \
                 .execute()
-    print(accounts.data)
     transactions = await supabase.table("transactions") \
         .select("amount,category_group,category,description") \
             .eq("user_id",USER_ID) \
                 .execute()
-    print(transactions.data)
-    categories = await get_categories()
-    print(categories)
-    cat_grp_ids = categories[0]["id"]
-    print(cat_grp_ids)
+    _, categories = await get_categories()
     cat_grps_ids_ls = []
     for cat_grp in categories:
         cat_grps_ids_ls.append(cat_grp["id"])
-    print(cat_grps_ids_ls)
     target_ls = []
     for id in cat_grps_ids_ls:
         targets = await supabase.table("categories") \
@@ -61,7 +62,6 @@ async def get_full_user_info():
                 .eq("category_group_id",id) \
                     .execute()   
         target_ls.extend(targets.data)
-    print(target_ls)
     return {
         "accounts": accounts.data,
         "transactions": transactions.data,
