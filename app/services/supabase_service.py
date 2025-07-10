@@ -26,22 +26,31 @@ async def get_categories():
 async def store_finance(data:str):
     """store data from llm to supabase
     """
-    data = json.loads(data)
-    supabase = await create_supabase()
-    response = await supabase.table("transactions") \
-                  .insert({
-                      "user_id": USER_ID,
-                      "created_at": datetime.datetime.now().isoformat(),
-                      "amount":data["amount"],
-                      "category":data["category"],
-                      "category_group":data["category_group"],
-                      "description":data["description"],
-                      "type":data["type"],
-                      "category_id": data["category_id"],
-                      "account_id":data["account_id"]
-                  }) \
-                      .execute()
-    return {"response":data["response"]}
+    try:
+        data = json.loads(data)
+        supabase = await create_supabase()
+        response = await supabase.table("transactions") \
+                    .insert({
+                        "user_id": USER_ID,
+                        "created_at": datetime.datetime.now().isoformat(),
+                        "amount":data["amount"],
+                        "category":data["category"],
+                        "category_group":data["category_group"],
+                        "description":data["description"],
+                        "type":data["type"],
+                        "category_id": data["category_id"],
+                        "account_id":data["account_id"]
+                    }) \
+                        .execute()
+        return {
+            "success": True,
+            "message": f"Successfully logged expense of ₹{data['amount']} for {data['description']} in {data['category']} category."
+        }
+    except Exception as e:
+        return {
+            "success": False,
+            "message": f"Failed to log expense: {str(e)}"
+        }
 
 async def get_full_user_info():
     supabase = await create_supabase()

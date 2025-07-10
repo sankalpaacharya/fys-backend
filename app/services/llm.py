@@ -29,78 +29,85 @@ FINANCE_TOOLS = [
     }
 ]
 
-def get_llm_client_and_model(provider: str, type: str):
+def get_llm_client_and_model(provider: str):
     if provider == "openai":
         return AsyncOpenAI(api_key=settings.OPENAI_API_KEY), "gpt-4o"
-    elif provider == "groq" and type == "chat":
-        return AsyncGroq(api_key=settings.GROQ_API_KEY), "llama-3.3-70b-versatile"
-    elif provider == "groq" and type == "snap":
+    elif provider == "groq":
         return AsyncGroq(api_key=settings.GROQ_API_KEY), "meta-llama/llama-4-scout-17b-16e-instruct"
     else:
         error_msg = f"Unsupported LLM provider: {provider}"
         raise ValueError(error_msg)
 
 async def chat_with_stream(provider: str, query: str) -> AsyncGenerator[str, None]:
-    client, model = get_llm_client_and_model(provider,type="chat")
-    finance_data  = await get_full_user_info()
-    chat_prompt = prompt_render(prompt_obj=ChatPrompt(query=query,finance_data=str(finance_data)))
-    messages = [{"role":"system","content":chat_prompt},{"role": "user", "content": query}]
+    """
+    Improved streaming approach that handles both normal conversation and function calls
+    """
+    client, model = get_llm_client_and_model(provider)
+    finance_data = await get_full_user_info()
+    chat_prompt = prompt_render(prompt_obj=ChatPrompt(query=query, finance_data=str(finance_data)))
+    messages = [{"role": "system", "content": chat_prompt}, {"role": "user", "content": query}]
+    
     try:
         response = await client.chat.completions.create(
             model=model,
             messages=messages,
             tools=FINANCE_TOOLS,
             tool_choice="auto",
+            stream=False
         )
+        
         response_message = response.choices[0].message
         tool_calls = response_message.tool_calls
+        
         if tool_calls:
-            available_function = {
+            available_functions = {
                 "store_finance": store_finance
             }
+            
             messages.append(response_message)
+            
             for tool_call in tool_calls:
                 function_name = tool_call.function.name
-                function_to_call = available_function.get(function_name)
-                function_args = json.loads(tool_call.function.arguments)
-                function_response = await function_to_call(
-                    data=function_args.get("data", "")
-                )
-                messages.append(
-                    {
+                function_to_call = available_functions.get(function_name)
+                if function_to_call:
+                    function_args = json.loads(tool_call.function.arguments)
+                    function_response = await function_to_call(
+                        data=function_args.get("data", "")
+                    )
+                    messages.append({
                         "tool_call_id": tool_call.id,
-                        "role":"tool",
-                        "name":function_name,
-                        "content":function_response['response']
-                    }
-                )
+                        "role": "tool",
+                        "name": function_name,
+                        "content": json.dumps(function_response)
+                    })
+            
             final_response = await client.chat.completions.create(
                 model=model,
                 messages=messages,
                 stream=True
             )
-            streamed_response = ""
+            
             async for chunk in final_response:
-                if hasattr(chunk.choices[0], "delta") and hasattr(chunk.choices[0].delta, "content"):
+                if chunk.choices[0].delta.content:
                     content = chunk.choices[0].delta.content
-                    if content:
-                        streamed_response += content
-                        yield f"data: {content}\n\n"
+                    yield f"data: {content}\n\n"
         else:
-            if response_message.content:
-                content = response_message.content
-                words = content.split()
-                for i, word in enumerate(words):
-                    if i == 0:
-                        yield f"data: {word}\n\n"
-                    else:
-                        yield f"data:  {word}\n\n"
-        print("Final response:", response_message.content)
+            streaming_response = await client.chat.completions.create(
+                model=model,
+                messages=messages,
+                stream=True
+            )
+            
+            async for chunk in streaming_response:
+                if chunk.choices[0].delta.content:
+                    content = chunk.choices[0].delta.content
+                    yield f"data: {content}\n\n"
+    
     except Exception as e:
-        raise
+        yield f"data: Error: {str(e)}\n\n"
 
 async def upload_snap_to_ai(image:UploadFile):
-    client, model  = get_llm_client_and_model("groq",type="snap")
+    client, model  = get_llm_client_and_model("groq")
     image_bytes = await image.read()
     encoded_image = base64.b64encode(image_bytes).decode("utf-8")
     image_data_url = f"data:{image.content_type};base64,{encoded_image}"
@@ -123,7 +130,7 @@ async def upload_snap_to_ai(image:UploadFile):
         print(e)
         
 async def notification(provider:str):
-    client, model = get_llm_client_and_model(provider,type="chat")
+    client, model = get_llm_client_and_model(provider)
     finance = await get_full_user_info()
     notification_prompt = prompt_render(NotificationPrompt(finance=str(finance)))
     message =  [
