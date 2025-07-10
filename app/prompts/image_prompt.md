@@ -8,10 +8,7 @@ The user has uploaded an image of a product they bought. Analyze the image and e
 - Structure of the `{{categories}}` is {Category Group Name : List of categories and their ids that falls under the category group}
 - You have to assign category group and category provided in `{{categories}}` only.
 - If the category you assigned is not in `{{categories}}` then return empty string.  
-- Never create new categories - only use existing ones from the user's data
-- Using `{{user_data}}`, you have to rate the product based on its price and compare it to other expenses and give your response.
-- You have to thoroughly analyze the `{{user_data}}` and based on that rate the product. you have to take into account everything about the user like its `category group` , `category` , `expenses` and how much user has assigned.  
-- Be more `creative` while giving rating. It should not be same as given in example. 
+- Never create new categories - only use existing ones from the `{{user_data}}`
 
 **Response Format:**
 Return ONLY a JSON object with these exact keys:
@@ -21,7 +18,6 @@ Return ONLY a JSON object with these exact keys:
 - `category`: Specific category from user's existing categories (string)
 - `categoryID` : Specific category id from user's existing categories (uuid)
 - `type` : income/expense
-- `response` : Your response to the product. 
 
 **Examples:**
 {
@@ -31,7 +27,6 @@ Return ONLY a JSON object with these exact keys:
   "category": "Mobile Accessories",
   "categoryID": uuid,
   type : "expense",
-  "response" : "“you have assigned 5000 for gym and already spent 3000, you are overspending”"
 }
 
 {
@@ -39,7 +34,6 @@ Return ONLY a JSON object with these exact keys:
   "amount": 450.00,
   "categoryGroup": "Food & Dining",
   "category": "Restaurants",
-  "response" : "Its good you chose a alternate to other costly pizzas out there."
 }
 
 ## CRITICAL FORMATTING RULES:
